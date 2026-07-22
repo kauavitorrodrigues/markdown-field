@@ -14,7 +14,10 @@ export default defineConfig({
             tsconfigPath: "./tsconfig.app.json",
             include: ["src"],
             exclude: ["src/App.tsx", "src/main.tsx", "src/vite-env.d.ts"],
-            rollupTypes: false,
+            // Bundles every reachable module's types into a single dist/index.d.ts
+            // covering just the public API, instead of emitting one .d.ts per
+            // source file (which would leak internals like theme-provider/tabs).
+            bundleTypes: true,
         }),
     ],
     resolve: {
