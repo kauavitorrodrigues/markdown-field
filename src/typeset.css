@@ -315,6 +315,79 @@
       margin-inline: 0;
     }
 
+    /* Callouts: `> [!type] optional title`. Type sets the accent color +
+       icon; unrecognized types fall back to a neutral accent (no icon). */
+    &:where(.mf-callout) {
+      --mf-callout-accent: var(--typeset-rule);
+      border: 1px solid color-mix(in oklab, var(--mf-callout-accent) 35%, transparent);
+      border-inline-start-width: 3px;
+      border-radius: 0.5em;
+      background-color: color-mix(in oklab, var(--mf-callout-accent) 8%, transparent);
+      padding: 0.85em 1em;
+      margin-block-start: var(--typeset-flow);
+      margin-block-end: 0;
+      margin-inline: 0;
+    }
+    &:where(.mf-callout-title) {
+      font-weight: 600;
+      font-size: 0.9em;
+      color: var(--mf-callout-accent);
+    }
+    &:where(.mf-callout-body > :first-child) {
+      margin-block-start: 0.35em;
+    }
+    &:where(.mf-callout-body > :last-child) {
+      margin-block-end: 0;
+    }
+    &:where(.mf-callout-note, .mf-callout-info) {
+      --mf-callout-accent: oklch(0.6 0.18 250);
+    }
+    &:where(.mf-callout-tip, .mf-callout-success) {
+      --mf-callout-accent: oklch(0.65 0.17 155);
+    }
+    &:where(.mf-callout-important, .mf-callout-example) {
+      --mf-callout-accent: oklch(0.58 0.19 295);
+    }
+    &:where(.mf-callout-warning, .mf-callout-question) {
+      --mf-callout-accent: oklch(0.75 0.16 80);
+    }
+    &:where(.mf-callout-caution, .mf-callout-danger) {
+      --mf-callout-accent: oklch(0.6 0.22 25);
+    }
+    &:where(.mf-callout-abstract) {
+      --mf-callout-accent: oklch(0.65 0.13 210);
+    }
+    &:where(.mf-callout-quote) {
+      --mf-callout-accent: var(--typeset-muted);
+    }
+    &:where(.mf-callout-note .mf-callout-title, .mf-callout-info .mf-callout-title)::before {
+      content: "📝 ";
+    }
+    &:where(.mf-callout-tip .mf-callout-title, .mf-callout-success .mf-callout-title)::before {
+      content: "💡 ";
+    }
+    &:where(.mf-callout-important .mf-callout-title)::before {
+      content: "❗ ";
+    }
+    &:where(.mf-callout-warning .mf-callout-title)::before {
+      content: "⚠️ ";
+    }
+    &:where(.mf-callout-caution .mf-callout-title, .mf-callout-danger .mf-callout-title)::before {
+      content: "🔥 ";
+    }
+    &:where(.mf-callout-question .mf-callout-title)::before {
+      content: "❓ ";
+    }
+    &:where(.mf-callout-example .mf-callout-title)::before {
+      content: "🧩 ";
+    }
+    &:where(.mf-callout-abstract .mf-callout-title)::before {
+      content: "📄 ";
+    }
+    &:where(.mf-callout-quote .mf-callout-title)::before {
+      content: "💬 ";
+    }
+
     /* Dividers. */
     &:where(hr) {
       border: 0;
@@ -470,7 +543,7 @@
     }
 
     @media print {
-      &:where(pre, table, blockquote, figure) {
+      &:where(pre, table, blockquote, figure, .mf-callout) {
         break-inside: avoid;
       }
       &:where(h1, h2, h3, h4) {

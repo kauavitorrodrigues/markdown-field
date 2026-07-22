@@ -9,6 +9,7 @@ import { EditorContext } from "./Context"
 import { LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage } from "../shared/consts/image"
 import { Table } from "../shared/consts/table"
+import { Callout } from "../shared/consts/callout"
 
 type RootProps = {
     value: string
@@ -36,6 +37,7 @@ export function Root({ value, children, className }: RootProps) {
             TableRow,
             TableHeader,
             TableCell,
+            Callout,
             Markdown,
         ],
         []

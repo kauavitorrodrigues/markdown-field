@@ -12,6 +12,7 @@ import { EditorContext } from "./Context"
 import { MARK, LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage, insertImageFile } from "../shared/consts/image"
 import { Table } from "../shared/consts/table"
+import { Callout } from "../shared/consts/callout"
 import { getMarkdown } from "./consts/notePayload"
 import { SlashCommandExtension, SLASH_COMMANDS } from "./SlashCommand"
 
@@ -77,6 +78,7 @@ export function Root({
             TableRow,
             TableHeader,
             TableCell,
+            Callout,
             Markdown,
             // eslint-disable-next-line react-hooks/refs -- getPlaceholder is called by Tiptap outside of render, not during useMemo execution
             Placeholder.configure({ placeholder: getPlaceholder }),
