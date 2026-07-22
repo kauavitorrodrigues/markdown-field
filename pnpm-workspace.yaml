@@ -3,3 +3,6 @@ packages: []
 allowBuilds:
   esbuild: true
   msw: false
+
+overrides:
+  prosemirror-model: ^1.25.11
