@@ -10,29 +10,67 @@ const LARGE_DOCUMENT = Array.from(
         `## Section ${i + 1}\n\nThis is **paragraph ${i + 1}** with *italic*, ~~strike~~, and \`inline code\`.\n\nHere is a [link](https://example.com) and some more text to pad the content out to a realistic length.\n\n> Blockquote in section ${i + 1} with important notes.\n\n- Item A\n- Item B\n- Item C\n`
 ).join("\n")
 
-const INITIAL_VALUE = `## Acceptance Criteria
+const INITIAL_VALUE = `# Demonstração do campo
 
-### Dashboard
+Todos os recursos de markdown suportados pelo editor/viewer, num só documento.
 
-- Only courses from assigned content collections are displayed.
-- Courses outside collections never appear.
-- Dashboard behavior matches [Content Collections rules](https://example.com/docs).
+## Texto
 
-### Preview Security
+Um parágrafo com **negrito**, *itálico*, ~~riscado~~, \`código inline\` e um [link](https://example.com).
 
-- Non-enrolled students never receive preview lesson data.
-- Preview lessons return \`null\` when access is unavailable.
-- Embedded video URLs are not exposed for inaccessible courses.
+## Listas
 
-### Tests
+### Com marcador
 
-- Student with collection sees assigned courses.
-- Student without collection sees no courses.
-- Enrolled student receives preview lesson.
-- Non-enrolled student receives \`null\`.
-- Regression tests added.
+- Primeiro item
+- Segundo item
+  - Sub-item aninhado
+- Terceiro item
 
-![Diagram de arquitetura](https://images.pexels.com/photos/17345751/pexels-photo-17345751.jpeg)`
+### Numerada
+
+1. Levanta o custo de desenvolvimento
+2. Empilha as margens obrigatórias
+3. Soma os custos fixos
+
+## Citação
+
+> Uma citação simples, sem tipo de callout — vira blockquote comum.
+
+## Callouts
+
+> [!note] Nota
+> Callout informativo, com título customizado.
+
+> [!tip]
+> Callout de dica, sem título — usa o rótulo padrão do tipo.
+
+> [!warning] Erro mais comum
+> Cobrar a hora do projeto inteiro por um preço só.
+
+> [!important] Atenção
+> Algo que o leitor não pode deixar passar.
+
+> [!caution] Cuidado
+> Uma ação que pode ter consequências.
+
+## Tabela
+
+Com alinhamento por coluna (esquerda, centro, direita):
+
+| Papel | Horas | Custo/hora | Custo |
+| --- | :---: | :---: | ---: |
+| Front-end | 55 | R$60 | R$3.300 |
+| Back-end | 75 | R$50 | R$3.750 |
+| **Total** | | | **R$7.050** |
+
+## Imagem
+
+![Diagram de arquitetura](https://images.pexels.com/photos/17345751/pexels-photo-17345751.jpeg)
+
+---
+
+Acima do divisor: tudo que o campo entende nativamente.`
 
 export function App() {
     const [value, setValue] = useState(INITIAL_VALUE)
