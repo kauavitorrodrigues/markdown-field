@@ -2,11 +2,23 @@
   "name": "@kauavitorrodrigues/markdown-field",
   "version": "0.2.2",
   "type": "module",
+  "license": "MIT",
+  "description": "A markdown editor and viewer field for React, built on Tiptap.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kauavitorrodrigues/markdown-field.git"
+  },
+  "homepage": "https://github.com/kauavitorrodrigues/markdown-field#readme",
+  "bugs": {
+    "url": "https://github.com/kauavitorrodrigues/markdown-field/issues"
+  },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
