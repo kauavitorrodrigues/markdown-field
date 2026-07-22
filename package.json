@@ -1,6 +1,6 @@
 {
   "name": "@kauavitorrodrigues/markdown-field",
-  "version": "0.2.2",
+  "version": "0.1.0",
   "type": "module",
   "license": "MIT",
   "description": "A markdown editor and viewer field for React, built on Tiptap.",
