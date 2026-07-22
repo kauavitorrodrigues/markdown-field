@@ -379,24 +379,32 @@
       font-variant-numeric: tabular-nums;
       border-collapse: separate;
       border-spacing: 0;
-      border-block-end: 1px solid var(--typeset-rule);
+      border: 1px solid var(--typeset-rule);
+      border-radius: 0.375em;
       margin-block-start: var(--typeset-flow);
       margin-block-end: 0;
     }
 
     /* Horizontal scroll for any wide block. Wrap it and the wrapper owns the
        flow margin. Tables shrink to fit, so widen the table to make it scroll
-       instead of compress. */
-    &:where(.typeset-scroll) {
+       instead of compress. `.tableWrapper` is the wrapper Tiptap's table
+       extension renders around every table (renderWrapper: true). */
+    &:where(.typeset-scroll, .tableWrapper) {
       overflow-x: auto;
       margin-block-start: var(--typeset-flow);
     }
-    &:where(.typeset-scroll > *) {
+    &:where(.typeset-scroll > *, .tableWrapper > *) {
       margin-block-start: 0;
     }
     &:where(.typeset-scroll table) {
       width: max-content;
       max-width: none;
+    }
+    /* Relative-position every cell: the column resize handle and the
+       selected-cell overlay are absolutely positioned decorations that
+       need to be scoped to their own cell, not to some distant ancestor. */
+    &:where(th, td) {
+      position: relative;
     }
     &:where(thead th) {
       font-weight: 500;
@@ -416,11 +424,41 @@
     &:where(th:first-child, td:first-child) {
       padding-inline-start: 0;
     }
+    /* Column dividers, so the grid (and where a column resize would land)
+       is visible; the first column stays flush with the table edge. */
+    &:where(th:not(:first-child), td:not(:first-child)) {
+      border-inline-start: 1px solid var(--typeset-rule);
+    }
     &:where(th[align="center"], td[align="center"]) {
       text-align: center;
     }
     &:where(th[align="right"], td[align="right"]) {
       text-align: end;
+    }
+
+    /* Editable tables: column resize handle + cell selection overlay,
+       classes come from prosemirror-tables (columnResizing / CellSelection). */
+    &:where(.column-resize-handle) {
+      position: absolute;
+      inset-block: 0;
+      inline-size: 4px;
+      z-index: 20;
+      background-color: var(--color-ring, currentColor);
+      pointer-events: none;
+    }
+    &:where(.resize-cursor) {
+      cursor: col-resize;
+    }
+    &:where(.selectedCell) {
+      position: relative;
+    }
+    &:where(.selectedCell)::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: var(--color-ring, currentColor);
+      opacity: 0.12;
+      pointer-events: none;
     }
 
     /* Blocks inside list items keep the list's tighter rhythm. */

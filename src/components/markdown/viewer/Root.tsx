@@ -1,12 +1,14 @@
 import { useEditor } from "@tiptap/react"
 import { StarterKit } from "@tiptap/starter-kit"
 import { Link } from "@tiptap/extension-link"
+import { TableRow, TableHeader, TableCell } from "@tiptap/extension-table"
 import { Markdown } from "tiptap-markdown"
 import { useMemo, useEffect, useRef } from "react"
 import type { ReactNode } from "react"
 import { EditorContext } from "./Context"
 import { LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage } from "../shared/consts/image"
+import { Table } from "../shared/consts/table"
 
 type RootProps = {
     value: string
@@ -30,6 +32,10 @@ export function Root({ value, children, className }: RootProps) {
                 protocols: [...LINK_PROTOCOLS],
             }),
             MarkdownImage,
+            Table.configure({ resizable: false, renderWrapper: true }),
+            TableRow,
+            TableHeader,
+            TableCell,
             Markdown,
         ],
         []

@@ -2,6 +2,7 @@ import { useEditor } from "@tiptap/react"
 import { StarterKit } from "@tiptap/starter-kit"
 import { Link } from "@tiptap/extension-link"
 import { Placeholder } from "@tiptap/extension-placeholder"
+import { TableRow, TableHeader, TableCell } from "@tiptap/extension-table"
 import { Markdown } from "tiptap-markdown"
 import { useMemo, useEffect, useCallback, useRef, useImperativeHandle } from "react"
 import type { ReactNode, Ref } from "react"
@@ -10,6 +11,7 @@ import type { EditorView } from "@tiptap/pm/view"
 import { EditorContext } from "./Context"
 import { MARK, LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage, insertImageFile } from "../shared/consts/image"
+import { Table } from "../shared/consts/table"
 import { getMarkdown } from "./consts/notePayload"
 import { SlashCommandExtension, SLASH_COMMANDS } from "./SlashCommand"
 
@@ -71,6 +73,10 @@ export function Root({
             ...(images
                 ? [MarkdownImage.configure({ interactive: true, minWidth: 80, allowBase64: true })]
                 : []),
+            Table.configure({ resizable: true, renderWrapper: true }),
+            TableRow,
+            TableHeader,
+            TableCell,
             Markdown,
             // eslint-disable-next-line react-hooks/refs -- getPlaceholder is called by Tiptap outside of render, not during useMemo execution
             Placeholder.configure({ placeholder: getPlaceholder }),
