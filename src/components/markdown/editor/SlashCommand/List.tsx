@@ -98,6 +98,7 @@ export const SlashCommandList = forwardRef<
                 return (
                     <button
                         key={item.title}
+                        type="button"
                         className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${isGroupStart ? "mt-1 border-t border-border pt-2" : ""} ${
                             isSelected
                                 ? "bg-accent text-accent-foreground"

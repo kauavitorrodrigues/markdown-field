@@ -108,6 +108,7 @@ export function LinkBubble() {
 
     const applyUrl = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key !== "Enter") return
+        e.preventDefault()
         const range = getLinkRange()
         if (!range) return
         const { schema, state } = editor
@@ -171,6 +172,7 @@ const IconButton = memo(function IconButton({
 }) {
     return (
         <button
+            type="button"
             onClick={onClick}
             aria-label={label}
             className={cn(

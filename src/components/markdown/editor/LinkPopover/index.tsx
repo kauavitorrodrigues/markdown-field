@@ -32,7 +32,11 @@ export function LinkPopover({ children }: LinkPopoverProps) {
     }
 
     function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-        if (e.key === "Enter" && isValid && url !== "") {
+        if (e.key !== "Enter") return
+        // Always prevent the default here: this input isn't a form submit
+        // trigger, it's the confirmation control for the link URL.
+        e.preventDefault()
+        if (isValid && url !== "") {
             editor.chain().focus().setLink({ href: url }).run()
             setOpen(false)
         }
@@ -64,6 +68,7 @@ export function LinkPopover({ children }: LinkPopoverProps) {
                     />
                     {isLinkActive && (
                         <button
+                            type="button"
                             onClick={handleRemove}
                             aria-label="Remover link"
                             className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

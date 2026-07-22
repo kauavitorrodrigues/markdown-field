@@ -4,9 +4,10 @@ import type { ComponentProps } from "react"
 
 type Props = ComponentProps<typeof Button>
 
-export function CommandButton({ className, ...props }: Props) {
+export function CommandButton({ className, type = "button", ...props }: Props) {
     return (
         <Button
+            type={type}
             variant="ghost"
             size="icon"
             className={cn(

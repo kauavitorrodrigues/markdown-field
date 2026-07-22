@@ -56,6 +56,7 @@ export function TextStylePicker() {
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <button
+                    type="button"
                     aria-label="Estilo de texto"
                     className={cn(
                         "flex h-7 items-center gap-0.5 rounded-md px-1.5 text-sm font-medium transition-colors hover:bg-accent",
@@ -93,6 +94,7 @@ export function TextStylePicker() {
                     return (
                         <button
                             key={style.id}
+                            type="button"
                             data-active={isActive}
                             onClick={() => handleSelect(style)}
                             className={cn(
