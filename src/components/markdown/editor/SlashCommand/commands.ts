@@ -18,6 +18,7 @@ import type { LucideIcon } from "lucide-react"
 import { insertImageFile, openImageFilePicker } from "../../shared/consts/image"
 
 export type SlashCommandItem = {
+    id: string
     title: string
     description: string
     icon: LucideIcon
@@ -28,6 +29,7 @@ export type SlashCommandItem = {
 
 export const SLASH_COMMANDS: SlashCommandItem[] = [
     {
+        id: "heading1",
         title: "Título 1",
         description: "Título grande de seção",
         icon: Heading1,
@@ -37,6 +39,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).setHeading({ level: 1 }).run(),
     },
     {
+        id: "heading2",
         title: "Título 2",
         description: "Título médio de seção",
         icon: Heading2,
@@ -46,6 +49,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run(),
     },
     {
+        id: "heading3",
         title: "Título 3",
         description: "Título pequeno de seção",
         icon: Heading3,
@@ -55,6 +59,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).setHeading({ level: 3 }).run(),
     },
     {
+        id: "paragraph",
         title: "Texto normal",
         description: "Parágrafo de texto simples",
         icon: Type,
@@ -64,6 +69,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).setParagraph().run(),
     },
     {
+        id: "bulletList",
         title: "Lista com marcadores",
         description: "Lista não ordenada de itens",
         icon: List,
@@ -73,6 +79,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleBulletList().run(),
     },
     {
+        id: "orderedList",
         title: "Lista numerada",
         description: "Lista ordenada numericamente",
         icon: ListOrdered,
@@ -82,6 +89,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
     },
     {
+        id: "blockquote",
         title: "Citação",
         description: "Bloco de citação ou destaque",
         icon: Quote,
@@ -91,6 +99,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
     },
     {
+        id: "horizontalRule",
         title: "Divisor",
         description: "Separador visual entre seções",
         icon: Minus,
@@ -100,6 +109,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
     },
     {
+        id: "bold",
         title: "Negrito",
         description: "Deixar o texto em negrito",
         icon: Bold,
@@ -109,6 +119,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleBold().run(),
     },
     {
+        id: "italic",
         title: "Itálico",
         description: "Deixar o texto em itálico",
         icon: Italic,
@@ -118,6 +129,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleItalic().run(),
     },
     {
+        id: "strike",
         title: "Tachado",
         description: "Texto com linha no meio",
         icon: Strikethrough,
@@ -127,6 +139,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleStrike().run(),
     },
     {
+        id: "code",
         title: "Código inline",
         description: "Trecho de código dentro do texto",
         icon: Code,
@@ -136,6 +149,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
             editor.chain().focus().deleteRange(range).toggleCode().run(),
     },
     {
+        id: "image",
         title: "Imagem",
         description: "Anexar uma imagem do computador",
         icon: ImageIcon,
@@ -148,11 +162,11 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
     },
 ]
 
-export function filterCommands(query: string): SlashCommandItem[] {
-    if (!query) return SLASH_COMMANDS
+export function filterCommands(query: string, items: SlashCommandItem[] = SLASH_COMMANDS): SlashCommandItem[] {
+    if (!query) return items
 
     const q = query.toLowerCase()
-    return SLASH_COMMANDS.filter(
+    return items.filter(
         (item) =>
             item.title.toLowerCase().includes(q) ||
             item.description.toLowerCase().includes(q) ||

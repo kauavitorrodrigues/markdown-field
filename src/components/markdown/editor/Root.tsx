@@ -11,7 +11,7 @@ import { EditorContext } from "./Context"
 import { MARK, LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage, insertImageFile } from "../shared/consts/image"
 import { getMarkdown } from "./consts/notePayload"
-import { SlashCommandExtension } from "./SlashCommand"
+import { SlashCommandExtension, SLASH_COMMANDS } from "./SlashCommand"
 
 type RootProps = {
     value: string
@@ -19,13 +19,24 @@ type RootProps = {
     children: ReactNode
     placeholder?: string
     className?: string
+    // Enables image support: pasting from the clipboard and the "Imagem"
+    // slash command. Off by default keeps text-only flows free of the
+    // image node, its toolbar entry, and the upload plumbing entirely.
+    images?: boolean
     // Exposes the underlying Tiptap editor, e.g. to build a save payload
     // with `getNotePayload(editorRef.current)` (a FormData) on submit.
     ref?: Ref<Editor | null>
 }
 
-export function Root({ value, onChange, children, placeholder, className, ref }: RootProps) {
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+export function Root({
+    value,
+    onChange,
+    children,
+    placeholder,
+    className,
+    images = true,
+    ref,
+}: RootProps) {
     // Tracks the last markdown string emitted by the editor so we can
     // distinguish our own onChange echoes from genuine external value changes.
     const lastInternalValueRef = useRef<string | null>(null)
@@ -33,13 +44,10 @@ export function Root({ value, onChange, children, placeholder, className, ref }:
 
     const onUpdate = useCallback(
         ({ editor }: { editor: Editor }) => {
-            clearTimeout(debounceRef.current)
-            debounceRef.current = setTimeout(() => {
-                const markdown = getMarkdown(editor)
-                if (markdown === lastInternalValueRef.current) return
-                lastInternalValueRef.current = markdown
-                onChange(markdown)
-            }, 300)
+            const markdown = getMarkdown(editor)
+            if (markdown === lastInternalValueRef.current) return
+            lastInternalValueRef.current = markdown
+            onChange(markdown)
         },
         [onChange]
     )
@@ -60,17 +68,17 @@ export function Root({ value, onChange, children, placeholder, className, ref }:
                 linkOnPaste: true,
                 protocols: [...LINK_PROTOCOLS],
             }),
-            MarkdownImage.configure({
-                interactive: true,
-                minWidth: 80,
-                allowBase64: true,
-            }),
+            ...(images
+                ? [MarkdownImage.configure({ interactive: true, minWidth: 80, allowBase64: true })]
+                : []),
             Markdown,
             // eslint-disable-next-line react-hooks/refs -- getPlaceholder is called by Tiptap outside of render, not during useMemo execution
             Placeholder.configure({ placeholder: getPlaceholder }),
-            SlashCommandExtension,
+            SlashCommandExtension.configure({
+                items: images ? SLASH_COMMANDS : SLASH_COMMANDS.filter((item) => item.id !== "image"),
+            }),
         ],
-        [getPlaceholder]
+        [getPlaceholder, images]
     )
 
     const handleClick = useCallback(
@@ -97,18 +105,23 @@ export function Root({ value, onChange, children, placeholder, className, ref }:
     // uploading right away. The note only gets uploaded, alongside its
     // content, when the app actually submits it as multipart form data
     // (see `getNotePayload`).
-    const handlePaste = useCallback((_view: EditorView, event: ClipboardEvent) => {
-        const imageFile = Array.from(event.clipboardData?.files ?? []).find((file) =>
-            file.type.startsWith("image/")
-        )
-        if (!imageFile) return false
+    const handlePaste = useCallback(
+        (_view: EditorView, event: ClipboardEvent) => {
+            if (!images) return false
 
-        event.preventDefault()
+            const imageFile = Array.from(event.clipboardData?.files ?? []).find((file) =>
+                file.type.startsWith("image/")
+            )
+            if (!imageFile) return false
 
-        if (editorRef.current) insertImageFile(editorRef.current, imageFile)
+            event.preventDefault()
 
-        return true
-    }, [])
+            if (editorRef.current) insertImageFile(editorRef.current, imageFile)
+
+            return true
+        },
+        [images]
+    )
 
     const editor = useEditor({
         extensions,
@@ -140,10 +153,6 @@ export function Root({ value, onChange, children, placeholder, className, ref }:
             editor.commands.setContent(value)
         }
     }, [editor, value])
-
-    useEffect(() => {
-        return () => clearTimeout(debounceRef.current)
-    }, [])
 
     const contextValue = useMemo(() => ({ editor }), [editor])
 

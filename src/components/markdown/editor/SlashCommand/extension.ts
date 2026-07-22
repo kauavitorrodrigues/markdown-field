@@ -3,7 +3,7 @@ import { Suggestion } from "@tiptap/suggestion"
 import ReactDOM from "react-dom/client"
 import { createElement, createRef } from "react"
 import type { SuggestionProps, SuggestionKeyDownProps } from "@tiptap/suggestion"
-import { filterCommands, type SlashCommandItem } from "./commands"
+import { filterCommands, SLASH_COMMANDS, type SlashCommandItem } from "./commands"
 import { SlashCommandList, type SlashCommandListHandle } from "./List"
 
 type SlashStorage = {
@@ -11,8 +11,16 @@ type SlashStorage = {
     container: HTMLDivElement | null
 }
 
-export const SlashCommandExtension = Extension.create<SlashStorage>({
+type SlashOptions = {
+    items: SlashCommandItem[]
+}
+
+export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage>({
     name: "slashCommand",
+
+    addOptions(): SlashOptions {
+        return { items: SLASH_COMMANDS }
+    },
 
     addStorage(): SlashStorage {
         return { root: null, container: null }
@@ -28,6 +36,7 @@ export const SlashCommandExtension = Extension.create<SlashStorage>({
 
     addProseMirrorPlugins() {
         const storage = this.storage as SlashStorage
+        const options = this.options as SlashOptions
 
         return [
             Suggestion<SlashCommandItem>({
@@ -37,7 +46,7 @@ export const SlashCommandExtension = Extension.create<SlashStorage>({
                 startOfLine: false,
                 allowedPrefixes: [" ", "\n"],
                 items({ query }) {
-                    return filterCommands(query)
+                    return filterCommands(query, options.items)
                 },
                 render() {
                     const listRef = createRef<SlashCommandListHandle>()
