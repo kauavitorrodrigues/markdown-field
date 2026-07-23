@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, useCallback, memo } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
 import type { KeyboardEvent } from "react"
 import { getMarkRange } from "@tiptap/core"
 import { animate } from "motion"
 import { ExternalLink, Trash2 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { useEditorContext } from "../Context"
 import { MARK } from "../../shared/consts/marks"
+import { BubbleIconButton } from "../BubbleIconButton"
 
 export function LinkBubble() {
     const { editor } = useEditorContext()
@@ -154,41 +154,13 @@ export function LinkBubble() {
                 placeholder="https://"
                 className="h-7 w-52 rounded px-2 text-sm outline-none"
             />
-            <IconButton onClick={openLink} label="Abrir link">
+            <BubbleIconButton onClick={openLink} label="Abrir link">
                 <ExternalLink className="size-3.5" />
-            </IconButton>
-            <IconButton onClick={removeLink} label="Remover link" danger>
+            </BubbleIconButton>
+            <BubbleIconButton onClick={removeLink} label="Remover link" danger>
                 <Trash2 className="size-3.5" />
-            </IconButton>
+            </BubbleIconButton>
         </div>,
         document.body
     )
 }
-
-const IconButton = memo(function IconButton({
-    onClick,
-    label,
-    danger,
-    children,
-}: {
-    onClick: () => void
-    label: string
-    danger?: boolean
-    children: React.ReactNode
-}) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-label={label}
-            className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded transition-colors",
-                danger
-                    ? "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-        >
-            {children}
-        </button>
-    )
-})
