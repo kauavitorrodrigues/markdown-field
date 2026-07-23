@@ -14,6 +14,12 @@ const INITIAL_VALUE = `# Demonstração do campo
 
 Todos os recursos de markdown suportados pelo editor/viewer, num só documento.
 
+## Índice
+
+- [[#Texto|Texto]]
+- [[#Citação|Citação]]
+- [[#Tabela|Tabela]]
+
 ## Texto
 
 Um parágrafo com **negrito**, *itálico*, ~~riscado~~, \`código inline\` e um [link](https://example.com).
