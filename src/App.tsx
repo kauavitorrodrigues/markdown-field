@@ -3,6 +3,14 @@ import type { Editor } from "@tiptap/core"
 import { MarkdownEditor, getNotePayload } from "@/components/markdown/editor"
 import { MarkdownViewer } from "@/components/markdown/viewer"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 
 const LARGE_DOCUMENT = Array.from(
     { length: 200 },
@@ -81,6 +89,7 @@ Acima do divisor: tudo que o campo entende nativamente.`
 export function App() {
     const [value, setValue] = useState(INITIAL_VALUE)
     const [editor, setEditor] = useState<Editor | null>(null)
+    const [dialogValue, setDialogValue] = useState("")
     const payloadPreview = useMemo(() => {
         if (!editor) return ""
 
@@ -110,13 +119,49 @@ export function App() {
                             <TabsTrigger value="editor">Editor</TabsTrigger>
                             <TabsTrigger value="viewer">Viewer</TabsTrigger>
                         </TabsList>
-                        <button
-                            onClick={() => setValue(LARGE_DOCUMENT)}
-                            className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-                        >
-                            Load ~{Math.round(LARGE_DOCUMENT.length / 1000)}k
-                            chars
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <button className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted">
+                                        Abrir dentro de um Dialog (teste de Portal)
+                                    </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                    <DialogHeader>
+                                        <DialogTitle>Campo dentro de um Radix Dialog</DialogTitle>
+                                        <DialogDescription>
+                                            Valida que bolhas/popovers (seletor de estilo de texto,
+                                            link) e o placeholder continuam visíveis e clicáveis
+                                            quando o campo está aninhado dentro de outro Portal do
+                                            Radix, sem serem fechados ou ocultados pelo dismiss-layer
+                                            ou focus-trap do Dialog em volta.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <MarkdownEditor.Root
+                                        value={dialogValue}
+                                        onChange={setDialogValue}
+                                        placeholder="Digite aqui dentro do Dialog…"
+                                    >
+                                        <MarkdownEditor.Content contentClassName="min-h-40" />
+                                        <MarkdownEditor.LinkBubble />
+                                        <MarkdownEditor.WikiLinkBubble />
+                                        <MarkdownEditor.Bubble>
+                                            <MarkdownEditor.TextStylePicker />
+                                            <MarkdownEditor.Bold />
+                                            <MarkdownEditor.Italic />
+                                            <MarkdownEditor.Link />
+                                        </MarkdownEditor.Bubble>
+                                    </MarkdownEditor.Root>
+                                </DialogContent>
+                            </Dialog>
+                            <button
+                                onClick={() => setValue(LARGE_DOCUMENT)}
+                                className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+                            >
+                                Load ~{Math.round(LARGE_DOCUMENT.length / 1000)}k
+                                chars
+                            </button>
+                        </div>
                     </div>
                     <TabsContent value="editor">
                         <MarkdownEditor.Root
