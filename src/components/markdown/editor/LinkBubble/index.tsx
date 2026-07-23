@@ -19,6 +19,12 @@ export function LinkBubble() {
     const [url, setUrl] = useState("")
 
     function showBubble() {
+        // Only reset/re-animate opacity on the hidden -> visible transition.
+        // Hovering straight from one anchor to another (bubble already
+        // visible) must just reposition it - forcing opacity back to 0 here
+        // left it stuck invisible, because the entrance animation below only
+        // re-runs when `visible` itself flips (it was already `true`).
+        if (visibleRef.current) return
         if (bubbleRef.current) bubbleRef.current.style.opacity = "0"
         visibleRef.current = true
         setVisible(true)
