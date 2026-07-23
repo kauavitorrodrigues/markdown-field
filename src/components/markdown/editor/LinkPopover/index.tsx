@@ -6,7 +6,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Trash2 } from "lucide-react"
-import { useEditorContext, ActiveFlagsContext } from "../Context"
+import { useEditorContext, usePortalContainer, ActiveFlagsContext } from "../Context"
 import { cn } from "@/lib/utils"
 import { MARK, LINK_PROTOCOLS } from "../../shared/consts/marks"
 
@@ -16,6 +16,7 @@ type LinkPopoverProps = {
 
 export function LinkPopover({ children }: LinkPopoverProps) {
     const { editor } = useEditorContext()
+    const portalContainer = usePortalContainer()
     const isLinkActive = useContext(ActiveFlagsContext).link
     const [url, setUrl] = useState("")
     const [open, setOpen] = useState(false)
@@ -52,6 +53,7 @@ export function LinkPopover({ children }: LinkPopoverProps) {
             <PopoverTrigger asChild>{children}</PopoverTrigger>
             <PopoverContent
                 className="w-72 p-1"
+                container={portalContainer ?? undefined}
                 onOpenAutoFocus={(e) => e.preventDefault()}
             >
                 <div className="flex items-center gap-1">

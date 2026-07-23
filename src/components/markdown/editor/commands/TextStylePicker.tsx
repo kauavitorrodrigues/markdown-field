@@ -1,7 +1,7 @@
 import { useContext, useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useEditorContext, ActiveFlagsContext } from "../Context"
+import { useEditorContext, usePortalContainer, ActiveFlagsContext } from "../Context"
 import { cn } from "@/lib/utils"
 
 const STYLES = [
@@ -37,6 +37,7 @@ const STYLES = [
 
 export function TextStylePicker() {
     const { editor } = useEditorContext()
+    const portalContainer = usePortalContainer()
     const [open, setOpen] = useState(false)
     const { heading } = useContext(ActiveFlagsContext)
     const activeStyleId = !heading
@@ -79,6 +80,7 @@ export function TextStylePicker() {
                 className="w-52 gap-0 p-1 shadow-sm"
                 align="start"
                 side="bottom"
+                container={portalContainer ?? undefined}
                 onOpenAutoFocus={(e) => {
                     e.preventDefault()
                     const active = (e.currentTarget as HTMLElement).querySelector<HTMLElement>(

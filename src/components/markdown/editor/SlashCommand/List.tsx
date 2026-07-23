@@ -77,7 +77,7 @@ export const SlashCommandList = forwardRef<
         return (
             <div
                 ref={containerRef}
-                className="w-64 rounded-md border bg-popover p-1 shadow-xs"
+                className="w-64 max-h-(--mf-slash-max-h) overflow-y-auto rounded-md border bg-popover p-1 shadow-xs"
             >
                 <p className="px-2 py-1.5 text-sm text-muted-foreground">
                     Nenhum resultado
@@ -89,7 +89,7 @@ export const SlashCommandList = forwardRef<
     return (
         <div
             ref={containerRef}
-            className="w-64 rounded-md border bg-popover p-1 shadow-xs"
+            className="w-64 max-h-(--mf-slash-max-h) overflow-y-auto rounded-md border bg-popover p-1 shadow-xs"
         >
             {items.map((item, index) => {
                 const isSelected = index === selectedIndex

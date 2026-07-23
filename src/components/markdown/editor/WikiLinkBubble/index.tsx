@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
 import { createPortal } from "react-dom"
 import { getMarkRange } from "@tiptap/core"
+import { computePosition, flip, offset, shift } from "@floating-ui/dom"
 import { animate } from "motion"
 import { ArrowRight, Trash2 } from "lucide-react"
-import { useEditorContext } from "../Context"
+import { useEditorContext, usePortalContainer } from "../Context"
 import { MARK } from "../../shared/consts/marks"
 import { getDocumentHeadings } from "../../shared/consts/headingAnchors"
 import { scrollToWikiLinkTarget } from "../../shared/consts/wikiLink"
@@ -16,12 +17,13 @@ import { BubbleIconButton } from "../BubbleIconButton"
 // freeform input to type a broken one into.
 export function WikiLinkBubble() {
     const { editor } = useEditorContext()
+    const portalContainer = usePortalContainer()
     const bubbleRef = useRef<HTMLDivElement>(null)
     const anchorElRef = useRef<HTMLAnchorElement | null>(null)
     const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
     const visibleRef = useRef(false)
     const [visible, setVisible] = useState(false)
-    const [pos, setPos] = useState({ top: 0, left: 0 })
+    const [pos, setPos] = useState({ top: -9999, left: -9999 })
     const [target, setTarget] = useState("")
 
     function showBubble() {
@@ -78,8 +80,6 @@ export function WikiLinkBubble() {
 
             anchorElRef.current = anchor
             setTarget(anchor.getAttribute("data-wikilink-target") ?? "")
-            const rect = anchor.getBoundingClientRect()
-            setPos({ top: rect.bottom + 6, left: rect.left })
             showBubble()
         }
 
@@ -95,6 +95,24 @@ export function WikiLinkBubble() {
             dom.removeEventListener("mouseleave", onMouseLeave)
         }
     }, [editor, cancelHide, scheduleHide])
+
+    // Positioned via floating-ui (not a plain viewport-relative rect) so this
+    // stays correctly anchored even inside a transformed ancestor (e.g. a
+    // centered Radix Dialog), which breaks naive `position: fixed` math.
+    useLayoutEffect(() => {
+        if (!visible || !anchorElRef.current || !bubbleRef.current) return
+        let cancelled = false
+        computePosition(anchorElRef.current, bubbleRef.current, {
+            strategy: "fixed",
+            placement: "bottom-start",
+            middleware: [offset(6), flip(), shift({ padding: 8 })],
+        }).then(({ x, y }) => {
+            if (!cancelled) setPos({ top: y, left: x })
+        })
+        return () => {
+            cancelled = true
+        }
+    }, [visible, target])
 
     // Animate entrance whenever bubble becomes visible
     useEffect(() => {
@@ -142,14 +160,14 @@ export function WikiLinkBubble() {
         if (target) scrollToWikiLinkTarget(editor.view, target)
     }, [editor, target])
 
-    if (!visible) return null
+    if (!visible || !portalContainer) return null
 
     const targetIsStale = !headings.includes(target)
 
     return createPortal(
         <div
             ref={bubbleRef}
-            style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 50 }}
+            style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 2147483647 }}
             onMouseEnter={cancelHide}
             onMouseLeave={scheduleHide}
             className="flex items-center gap-1 rounded-md border bg-popover p-1.5 shadow-sm"
@@ -164,8 +182,8 @@ export function WikiLinkBubble() {
                         {target || "(sem título)"} — não encontrado
                     </option>
                 )}
-                {headings.map((heading) => (
-                    <option key={heading} value={heading}>
+                {headings.map((heading, index) => (
+                    <option key={`${heading}-${index}`} value={heading}>
                         {heading}
                     </option>
                 ))}
@@ -177,6 +195,6 @@ export function WikiLinkBubble() {
                 <Trash2 className="size-3.5" />
             </BubbleIconButton>
         </div>,
-        document.body
+        portalContainer
     )
 }

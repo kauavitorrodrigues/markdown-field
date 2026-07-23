@@ -1,5 +1,7 @@
 import { Extension } from "@tiptap/core"
 import { Suggestion } from "@tiptap/suggestion"
+import { autoUpdate, computePosition, flip, offset, shift, size } from "@floating-ui/dom"
+import type { VirtualElement } from "@floating-ui/dom"
 import ReactDOM from "react-dom/client"
 import { createElement, createRef } from "react"
 import type { SuggestionProps, SuggestionKeyDownProps } from "@tiptap/suggestion"
@@ -13,13 +15,15 @@ type SlashStorage = {
 
 type SlashOptions = {
     items: SlashCommandItem[]
+    // Container to mount the suggestion list into; defaults to `document.body`.
+    getContainer?: () => HTMLElement | null
 }
 
 export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage>({
     name: "slashCommand",
 
     addOptions(): SlashOptions {
-        return { items: SLASH_COMMANDS }
+        return { items: SLASH_COMMANDS, getContainer: () => null }
     },
 
     addStorage(): SlashStorage {
@@ -37,6 +41,7 @@ export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage
     addProseMirrorPlugins() {
         const storage = this.storage as SlashStorage
         const options = this.options as SlashOptions
+        const editorDom = this.editor.view.dom
 
         return [
             Suggestion<SlashCommandItem>({
@@ -51,6 +56,14 @@ export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage
                 render() {
                     const listRef = createRef<SlashCommandListHandle>()
                     let latestProps: SuggestionProps<SlashCommandItem> | null = null
+                    let stopAutoUpdate: (() => void) | null = null
+
+                    // Virtual reference tracking the `/` caret; contextElement
+                    // lets floating-ui find the right scroll/resize ancestors.
+                    const virtualReference: VirtualElement = {
+                        getBoundingClientRect: () => latestProps?.clientRect?.() ?? new DOMRect(),
+                        contextElement: editorDom,
+                    }
 
                     function renderList(props: SuggestionProps<SlashCommandItem>) {
                         storage.root?.render(
@@ -63,25 +76,39 @@ export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage
                         )
                     }
 
-                    function updatePosition(props: SuggestionProps<SlashCommandItem>) {
-                        const rect = props.clientRect?.()
-                        if (rect && storage.container) {
-                            storage.container.style.top = `${rect.bottom + 6}px`
-                            storage.container.style.left = `${rect.left}px`
-                        }
-                    }
-
-                    // The menu is positioned in viewport (`fixed`) coordinates
-                    // computed from the caret's clientRect, but that rect only
-                    // gets recomputed on start/update. Track scrolling on any
-                    // ancestor (capture phase) so the menu keeps following the
-                    // `/` character instead of staying stuck in place.
-                    function onScroll() {
-                        if (latestProps) updatePosition(latestProps)
+                    // floating-ui keeps this anchored correctly even when a
+                    // transformed ancestor (e.g. a Radix Dialog centered via
+                    // translate) creates a new containing block for fixed elements.
+                    async function updatePosition() {
+                        if (!storage.container) return
+                        const { x, y } = await computePosition(virtualReference, storage.container, {
+                            strategy: "fixed",
+                            placement: "bottom-start",
+                            middleware: [
+                                offset(6),
+                                flip({ fallbackPlacements: ["top-start"] }),
+                                shift({ padding: 8 }),
+                                size({
+                                    padding: 8,
+                                    apply({ availableHeight }) {
+                                        storage.container?.style.setProperty(
+                                            "--mf-slash-max-h",
+                                            `${Math.max(160, Math.floor(availableHeight))}px`
+                                        )
+                                    },
+                                }),
+                            ],
+                        })
+                        Object.assign(storage.container.style, {
+                            top: `${y}px`,
+                            left: `${x}px`,
+                            visibility: "visible",
+                        })
                     }
 
                     function teardown() {
-                        window.removeEventListener("scroll", onScroll, true)
+                        stopAutoUpdate?.()
+                        stopAutoUpdate = null
                         storage.root?.unmount()
                         storage.root = null
                         storage.container?.remove()
@@ -94,23 +121,24 @@ export const SlashCommandExtension = Extension.create<SlashOptions, SlashStorage
                             if (!storage.container) {
                                 storage.container = document.createElement("div")
                                 storage.container.style.position = "fixed"
-                                storage.container.style.zIndex = "9999"
+                                storage.container.style.zIndex = "2147483647"
                             }
+                            // Hidden until the first computePosition() resolves, so it
+                            // never flashes at its unpositioned (0,0) default for a frame.
+                            storage.container.style.visibility = "hidden"
                             // Always remount so the component is fresh and the enter animation fires
                             storage.root?.unmount()
                             storage.root = ReactDOM.createRoot(storage.container)
-                            document.body.appendChild(storage.container)
+                            ;(options.getContainer?.() ?? document.body).appendChild(storage.container)
 
-                            updatePosition(props)
                             renderList(props)
-
-                            window.addEventListener("scroll", onScroll, true)
+                            stopAutoUpdate = autoUpdate(virtualReference, storage.container, updatePosition)
                         },
 
                         onUpdate(props: SuggestionProps<SlashCommandItem>) {
                             latestProps = props
-                            updatePosition(props)
                             renderList(props)
+                            void updatePosition()
                         },
 
                         onKeyDown({ event }: SuggestionKeyDownProps): boolean {

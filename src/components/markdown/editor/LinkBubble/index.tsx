@@ -1,21 +1,23 @@
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react"
 import { createPortal } from "react-dom"
 import type { KeyboardEvent } from "react"
 import { getMarkRange } from "@tiptap/core"
+import { computePosition, flip, offset, shift } from "@floating-ui/dom"
 import { animate } from "motion"
 import { ExternalLink, Trash2 } from "lucide-react"
-import { useEditorContext } from "../Context"
+import { useEditorContext, usePortalContainer } from "../Context"
 import { MARK } from "../../shared/consts/marks"
 import { BubbleIconButton } from "../BubbleIconButton"
 
 export function LinkBubble() {
     const { editor } = useEditorContext()
+    const portalContainer = usePortalContainer()
     const bubbleRef = useRef<HTMLDivElement>(null)
     const anchorElRef = useRef<HTMLAnchorElement | null>(null)
     const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
     const visibleRef = useRef(false)
     const [visible, setVisible] = useState(false)
-    const [pos, setPos] = useState({ top: 0, left: 0 })
+    const [pos, setPos] = useState({ top: -9999, left: -9999 })
     const [url, setUrl] = useState("")
 
     function showBubble() {
@@ -79,8 +81,6 @@ export function LinkBubble() {
 
             anchorElRef.current = anchor
             setUrl(anchor.getAttribute("href") ?? "")
-            const rect = anchor.getBoundingClientRect()
-            setPos({ top: rect.bottom + 6, left: rect.left })
             showBubble()
         }
 
@@ -96,6 +96,24 @@ export function LinkBubble() {
             dom.removeEventListener("mouseleave", onMouseLeave)
         }
     }, [editor, cancelHide, scheduleHide])
+
+    // Positioned via floating-ui (not a plain viewport-relative rect) so this
+    // stays correctly anchored even inside a transformed ancestor (e.g. a
+    // centered Radix Dialog), which breaks naive `position: fixed` math.
+    useLayoutEffect(() => {
+        if (!visible || !anchorElRef.current || !bubbleRef.current) return
+        let cancelled = false
+        computePosition(anchorElRef.current, bubbleRef.current, {
+            strategy: "fixed",
+            placement: "bottom-start",
+            middleware: [offset(6), flip(), shift({ padding: 8 })],
+        }).then(({ x, y }) => {
+            if (!cancelled) setPos({ top: y, left: x })
+        })
+        return () => {
+            cancelled = true
+        }
+    }, [visible, url])
 
     // Animate entrance whenever bubble becomes visible
     useEffect(() => {
@@ -139,12 +157,12 @@ export function LinkBubble() {
         if (url) window.open(url, "_blank", "noopener,noreferrer")
     }, [url])
 
-    if (!visible) return null
+    if (!visible || !portalContainer) return null
 
     return createPortal(
         <div
             ref={bubbleRef}
-            style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 50 }}
+            style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 2147483647 }}
             onMouseEnter={cancelHide}
             onMouseLeave={scheduleHide}
             className="flex items-center gap-1 rounded-md border bg-popover p-1.5 shadow-sm"
@@ -163,6 +181,6 @@ export function LinkBubble() {
                 <Trash2 className="size-3.5" />
             </BubbleIconButton>
         </div>,
-        document.body
+        portalContainer
     )
 }

@@ -3,8 +3,12 @@ import { useEditorState } from "@tiptap/react"
 import type { Editor } from "@tiptap/core"
 import { MARK } from "../shared/consts/marks"
 
-export const EditorContext = createContext<{ editor: Editor | null }>({
+export const EditorContext = createContext<{
+    editor: Editor | null
+    portalContainer: HTMLElement | null
+}>({
     editor: null,
+    portalContainer: null,
 })
 
 export function useEditorContext(): { editor: Editor } {
@@ -15,6 +19,13 @@ export function useEditorContext(): { editor: Editor } {
         )
     }
     return { editor }
+}
+
+// Bubbles/popovers portal here instead of `document.body` so a foreign
+// Radix Dialog/Popover the field is nested in doesn't treat them as an
+// outside click and dismiss itself.
+export function usePortalContainer(): HTMLElement | null {
+    return useContext(EditorContext).portalContainer
 }
 
 export function useEditorActiveState(

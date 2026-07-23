@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@floating-ui/dom':
+        specifier: 1.7.6
+        version: 1.7.6
       '@tiptap/core':
         specifier: 3.28.0
         version: 3.28.0(@tiptap/pm@3.28.0)

@@ -4,7 +4,7 @@ import { Link } from "@tiptap/extension-link"
 import { Placeholder } from "@tiptap/extension-placeholder"
 import { TableRow, TableHeader, TableCell } from "@tiptap/extension-table"
 import { Markdown } from "tiptap-markdown"
-import { useMemo, useEffect, useCallback, useRef, useImperativeHandle } from "react"
+import { useMemo, useEffect, useCallback, useRef, useState, useImperativeHandle } from "react"
 import type { ReactNode, Ref } from "react"
 import type { Editor } from "@tiptap/core"
 import type { EditorView } from "@tiptap/pm/view"
@@ -64,6 +64,14 @@ export function Root({
 
     const getPlaceholder = useCallback(() => placeholderRef.current ?? "", [])
 
+    const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null)
+    const portalContainerRef = useRef<HTMLDivElement | null>(null)
+    useEffect(() => {
+        portalContainerRef.current = portalContainer
+    })
+
+    const getPortalContainer = useCallback(() => portalContainerRef.current, [])
+
     const extensions = useMemo(
         () => [
             StarterKit.configure({ heading: { levels: [1, 2, 3] }, codeBlock: false, link: false }),
@@ -86,11 +94,13 @@ export function Root({
             Markdown,
             // eslint-disable-next-line react-hooks/refs -- getPlaceholder is called by Tiptap outside of render, not during useMemo execution
             Placeholder.configure({ placeholder: getPlaceholder }),
+            // eslint-disable-next-line react-hooks/refs -- getPortalContainer is called by Tiptap outside of render, not during useMemo execution
             SlashCommandExtension.configure({
                 items: images ? SLASH_COMMANDS : SLASH_COMMANDS.filter((item) => item.id !== "image"),
+                getContainer: getPortalContainer,
             }),
         ],
-        [getPlaceholder, images]
+        [getPlaceholder, getPortalContainer, images]
     )
 
     const handleClick = useCallback(
@@ -170,11 +180,14 @@ export function Root({
         }
     }, [editor, value])
 
-    const contextValue = useMemo(() => ({ editor }), [editor])
+    const contextValue = useMemo(() => ({ editor, portalContainer }), [editor, portalContainer])
 
     return (
         <EditorContext.Provider value={contextValue}>
-            <div className={className}>{editor ? children : null}</div>
+            <div className={className}>
+                {editor ? children : null}
+                <div ref={setPortalContainer} style={{ display: "contents" }} />
+            </div>
         </EditorContext.Provider>
     )
 }

@@ -19,16 +19,19 @@ function PopoverContent({
     className,
     align = "center",
     sideOffset = 4,
+    container,
     ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: React.ComponentProps<typeof PopoverPrimitive.Content> & {
+    container?: React.ComponentProps<typeof PopoverPrimitive.Portal>["container"]
+}) {
     return (
-        <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Portal container={container}>
             <PopoverPrimitive.Content
                 data-slot="popover-content"
                 align={align}
                 sideOffset={sideOffset}
                 className={cn(
-                    "z-50 flex w-72 flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+                    "z-[2147483647] flex w-72 flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
                     className
                 )}
                 {...props}
