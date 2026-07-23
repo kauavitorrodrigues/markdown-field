@@ -75,6 +75,13 @@ const formData = getNotePayload(editor) // FormData: "content" (markdown) + "fil
 | --- | --- | --- |
 | `value` | `string` | Markdown content to render, read-only. |
 
+## `MarkdownEditor.Content` / `MarkdownViewer.Content` props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `className` | `string` | Applied to the outer wrapper. |
+| `contentClassName` | `string` | Applied directly to the writable/rendered area itself (`.ProseMirror`), e.g. `"min-h-40 max-h-96 overflow-y-auto"`. |
+
 ## License
 
 [MIT](./LICENSE)
