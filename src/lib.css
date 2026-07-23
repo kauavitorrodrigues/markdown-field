@@ -1,0 +1,30 @@
+/*
+ * Compiled utility CSS for this package's own components. A consumer's
+ * Tailwind build never scans node_modules, so these classes need to ship
+ * pre-compiled. Bundled into dist/typeset.css.
+ */
+@import "tailwindcss/utilities";
+@import "tw-animate-css";
+
+/* Registers the shadcn color tokens our components reference so Tailwind
+   emits their utility classes; consumers supply the actual values. */
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+@import "./typeset.css";

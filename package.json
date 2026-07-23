@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && cp src/typeset.css dist/typeset.css",
+    "build:lib": "vite build --config vite.lib.config.ts && rm -f dist/_styles.js dist/_styles.js.map dist/_styles.d.ts && mv -f dist/_styles.css dist/typeset.css",
     "prepublishOnly": "pnpm build:lib",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
