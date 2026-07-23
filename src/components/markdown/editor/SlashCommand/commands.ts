@@ -12,10 +12,46 @@ import {
     Strikethrough,
     Code,
     Image as ImageIcon,
+    TableOfContents,
 } from "lucide-react"
 import type { Editor, Range } from "@tiptap/core"
 import type { LucideIcon } from "lucide-react"
+import type { JSONContent } from "@tiptap/core"
 import { insertImageFile, openImageFilePicker } from "../../shared/consts/image"
+import { getDocumentHeadings } from "../../shared/consts/headingAnchors"
+
+// Walks the current doc for headings and inserts a bullet list of wikilinks
+// pointing at each one (`[[#Heading|Heading]]`), i.e. a table of contents
+// built from the same anchors `WikiLink`/`HeadingAnchors` already support.
+function insertTableOfContents(editor: Editor, range: Range) {
+    const headings = getDocumentHeadings(editor)
+
+    const content: JSONContent = headings.length
+        ? {
+              type: "bulletList",
+              content: headings.map((text) => ({
+                  type: "listItem",
+                  content: [
+                      {
+                          type: "paragraph",
+                          content: [
+                              {
+                                  type: "text",
+                                  text,
+                                  marks: [{ type: "wikiLink", attrs: { target: text } }],
+                              },
+                          ],
+                      },
+                  ],
+              })),
+          }
+        : {
+              type: "paragraph",
+              content: [{ type: "text", text: "Nenhum título no documento ainda." }],
+          }
+
+    editor.chain().focus().deleteRange(range).insertContent(content).run()
+}
 
 export type SlashCommandItem = {
     id: string
@@ -57,6 +93,15 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
         keywords: ["titulo", "h3", "heading", "pequeno"],
         command: (editor, range) =>
             editor.chain().focus().deleteRange(range).setHeading({ level: 3 }).run(),
+    },
+    {
+        id: "tableOfContents",
+        title: "Índice",
+        description: "Lista com links para os títulos do documento",
+        icon: TableOfContents,
+        group: "Títulos",
+        keywords: ["indice", "índice", "sumario", "sumário", "toc", "table of contents"],
+        command: insertTableOfContents,
     },
     {
         id: "paragraph",
