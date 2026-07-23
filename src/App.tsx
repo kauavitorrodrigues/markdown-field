@@ -121,6 +121,7 @@ export function App() {
                         >
                             <MarkdownEditor.Content />
                             <MarkdownEditor.LinkBubble />
+                            <MarkdownEditor.WikiLinkBubble />
                             <MarkdownEditor.Bubble>
                                 <MarkdownEditor.TextStylePicker />
                                 <MarkdownEditor.Bold />

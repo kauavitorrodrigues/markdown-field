@@ -2,6 +2,7 @@ export { Root } from "./Root"
 export { Content } from "./Content"
 export { Bubble } from "./Bubble"
 export { LinkBubble } from "./LinkBubble"
+export { WikiLinkBubble } from "./WikiLinkBubble"
 export { CharacterCount } from "./CharacterCount"
 export { TextStylePicker } from "./commands/TextStylePicker"
 export { Bold } from "./commands/Bold"
@@ -20,6 +21,7 @@ import { Root } from "./Root"
 import { Content } from "./Content"
 import { Bubble } from "./Bubble"
 import { LinkBubble } from "./LinkBubble"
+import { WikiLinkBubble } from "./WikiLinkBubble"
 import { CharacterCount } from "./CharacterCount"
 import { TextStylePicker } from "./commands/TextStylePicker"
 import { Bold } from "./commands/Bold"
@@ -36,6 +38,7 @@ export const MarkdownEditor = {
     Content,
     Bubble,
     LinkBubble,
+    WikiLinkBubble,
     CharacterCount,
     TextStylePicker,
     Bold,

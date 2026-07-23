@@ -127,6 +127,23 @@
       font-weight: inherit;
     }
 
+    /* Wikilinks (`[[#Heading|Text]]`): internal anchors, styled apart from
+       regular links so it's clear they jump within the document. */
+    &:where(a.mf-wikilink) {
+      color: var(--typeset-accent, oklch(0.55 0.18 260));
+      text-decoration-line: none;
+      border-radius: 0.25em;
+      padding-inline: 0.1875em;
+      background-color: color-mix(in oklab, currentColor 10%, transparent);
+    }
+    &:where(a.mf-wikilink:hover) {
+      background-color: color-mix(in oklab, currentColor 16%, transparent);
+    }
+    &:where(a.mf-wikilink)::before {
+      content: "§ ";
+      opacity: 0.6;
+    }
+
     /* Inline semantics. */
     &:where(strong, b) {
       font-weight: 600;

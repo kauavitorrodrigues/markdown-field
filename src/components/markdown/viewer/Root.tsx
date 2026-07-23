@@ -3,13 +3,16 @@ import { StarterKit } from "@tiptap/starter-kit"
 import { Link } from "@tiptap/extension-link"
 import { TableRow, TableHeader, TableCell } from "@tiptap/extension-table"
 import { Markdown } from "tiptap-markdown"
-import { useMemo, useEffect, useRef } from "react"
+import { useMemo, useEffect, useRef, useCallback } from "react"
 import type { ReactNode } from "react"
+import type { EditorView } from "@tiptap/pm/view"
 import { EditorContext } from "./Context"
-import { LINK_PROTOCOLS } from "../shared/consts/marks"
+import { MARK, LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage } from "../shared/consts/image"
 import { Table } from "../shared/consts/table"
 import { Callout } from "../shared/consts/callout"
+import { HeadingAnchors } from "../shared/consts/headingAnchors"
+import { WikiLink, scrollToWikiLinkTarget } from "../shared/consts/wikiLink"
 
 type RootProps = {
     value: string
@@ -38,16 +41,32 @@ export function Root({ value, children, className }: RootProps) {
             TableHeader,
             TableCell,
             Callout,
+            HeadingAnchors,
+            WikiLink,
             Markdown,
         ],
         []
     )
+
+    const handleClick = useCallback((view: EditorView, pos: number) => {
+        const wikiLinkMark = view.state.doc
+            .resolve(pos)
+            .marks()
+            .find((m) => m.type.name === MARK.WIKI_LINK)
+        if (wikiLinkMark?.attrs.target) {
+            return scrollToWikiLinkTarget(view, wikiLinkMark.attrs.target as string)
+        }
+        return false
+    }, [])
 
     const editor = useEditor({
         extensions,
         editable: false,
         immediatelyRender: false,
         content: value,
+        editorProps: {
+            handleClick,
+        },
     })
 
     useEffect(() => {

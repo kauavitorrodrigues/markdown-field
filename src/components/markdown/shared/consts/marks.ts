@@ -7,6 +7,7 @@ export const MARK = {
     ORDERED_LIST: "orderedList",
     CODE: "code",
     LINK: "link",
+    WIKI_LINK: "wikiLink",
 } as const
 
 export const LINK_PROTOCOLS = ["http", "https"] as const

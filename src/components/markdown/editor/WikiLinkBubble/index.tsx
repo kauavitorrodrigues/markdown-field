@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import { createPortal } from "react-dom"
-import type { KeyboardEvent } from "react"
 import { getMarkRange } from "@tiptap/core"
 import { animate } from "motion"
-import { ExternalLink, Trash2 } from "lucide-react"
+import { ArrowRight, Trash2 } from "lucide-react"
 import { useEditorContext } from "../Context"
 import { MARK } from "../../shared/consts/marks"
+import { getDocumentHeadings } from "../../shared/consts/headingAnchors"
+import { scrollToWikiLinkTarget } from "../../shared/consts/wikiLink"
 import { BubbleIconButton } from "../BubbleIconButton"
 
-export function LinkBubble() {
+// Hover bubble for `[[#Heading|Text]]` anchors (mirrors LinkBubble's
+// structure/hover mechanics). Retargeting is a dropdown over the document's
+// actual headings rather than free text - unlike a URL, a wikilink target
+// that doesn't match a real heading is just a dead link, so there's no
+// freeform input to type a broken one into.
+export function WikiLinkBubble() {
     const { editor } = useEditorContext()
     const bubbleRef = useRef<HTMLDivElement>(null)
     const anchorElRef = useRef<HTMLAnchorElement | null>(null)
@@ -16,14 +22,9 @@ export function LinkBubble() {
     const visibleRef = useRef(false)
     const [visible, setVisible] = useState(false)
     const [pos, setPos] = useState({ top: 0, left: 0 })
-    const [url, setUrl] = useState("")
+    const [target, setTarget] = useState("")
 
     function showBubble() {
-        // Only reset/re-animate opacity on the hidden -> visible transition.
-        // Hovering straight from one anchor to another (bubble already
-        // visible) must just reposition it - forcing opacity back to 0 here
-        // left it stuck invisible, because the entrance animation below only
-        // re-runs when `visible` itself flips (it was already `true`).
         if (visibleRef.current) return
         if (bubbleRef.current) bubbleRef.current.style.opacity = "0"
         visibleRef.current = true
@@ -35,14 +36,14 @@ export function LinkBubble() {
         setVisible(false)
     }
 
-    const getLinkRange = useCallback(() => {
+    const getWikiLinkRange = useCallback(() => {
         const anchor = anchorElRef.current
         if (!anchor) return null
         try {
             const child = anchor.firstChild ?? anchor
             const pmPos = editor.view.posAtDOM(child, 0)
             const $pos = editor.state.doc.resolve(pmPos)
-            return getMarkRange($pos, editor.schema.marks[MARK.LINK])
+            return getMarkRange($pos, editor.schema.marks[MARK.WIKI_LINK])
         } catch {
             return null
         }
@@ -69,16 +70,14 @@ export function LinkBubble() {
                 : g?.tagName === "A" ? g
                 : null
             ) as HTMLAnchorElement | null
-            // This bubble edits `MARK.LINK` specifically (free-form URL, open,
-            // remove) - none of that applies to wikilink anchors, so skip them.
-            if (!anchor || anchor.hasAttribute("data-wikilink-target")) return
+            if (!anchor || !anchor.hasAttribute("data-wikilink-target")) return
 
             cancelHide()
 
             if (anchor === anchorElRef.current) return
 
             anchorElRef.current = anchor
-            setUrl(anchor.getAttribute("href") ?? "")
+            setTarget(anchor.getAttribute("data-wikilink-target") ?? "")
             const rect = anchor.getBoundingClientRect()
             setPos({ top: rect.bottom + 6, left: rect.left })
             showBubble()
@@ -114,32 +113,38 @@ export function LinkBubble() {
         return () => window.removeEventListener("scroll", hide, true)
     }, [visible])
 
-    const applyUrl = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key !== "Enter") return
-        e.preventDefault()
-        const range = getLinkRange()
-        if (!range) return
-        const { schema, state } = editor
-        editor.view.dispatch(
-            state.tr
-                .removeMark(range.from, range.to, schema.marks[MARK.LINK])
-                .addMark(range.from, range.to, schema.marks[MARK.LINK].create({ href: url }))
-        )
-    }, [editor, getLinkRange, url])
+    const headings = visible ? getDocumentHeadings(editor) : []
 
-    const removeLink = useCallback(() => {
-        const range = getLinkRange()
+    const retarget = useCallback(
+        (newTarget: string) => {
+            const range = getWikiLinkRange()
+            if (!range || !newTarget) return
+            const { schema, state } = editor
+            editor.view.dispatch(
+                state.tr
+                    .removeMark(range.from, range.to, schema.marks[MARK.WIKI_LINK])
+                    .addMark(range.from, range.to, schema.marks[MARK.WIKI_LINK].create({ target: newTarget }))
+            )
+            setTarget(newTarget)
+        },
+        [editor, getWikiLinkRange]
+    )
+
+    const removeWikiLink = useCallback(() => {
+        const range = getWikiLinkRange()
         if (!range) return
         const { schema, state } = editor
-        editor.view.dispatch(state.tr.removeMark(range.from, range.to, schema.marks[MARK.LINK]))
+        editor.view.dispatch(state.tr.removeMark(range.from, range.to, schema.marks[MARK.WIKI_LINK]))
         hideBubble()
-    }, [editor, getLinkRange])
+    }, [editor, getWikiLinkRange])
 
-    const openLink = useCallback(() => {
-        if (url) window.open(url, "_blank", "noopener,noreferrer")
-    }, [url])
+    const jumpToTarget = useCallback(() => {
+        if (target) scrollToWikiLinkTarget(editor.view, target)
+    }, [editor, target])
 
     if (!visible) return null
+
+    const targetIsStale = !headings.includes(target)
 
     return createPortal(
         <div
@@ -149,17 +154,26 @@ export function LinkBubble() {
             onMouseLeave={scheduleHide}
             className="flex items-center gap-1 rounded-md border bg-popover p-1.5 shadow-sm"
         >
-            <input
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={applyUrl}
-                placeholder="https://"
-                className="h-7 w-52 rounded px-2 text-sm outline-none"
-            />
-            <BubbleIconButton onClick={openLink} label="Abrir link">
-                <ExternalLink className="size-3.5" />
+            <select
+                value={targetIsStale ? "" : target}
+                onChange={(e) => retarget(e.target.value)}
+                className="h-7 max-w-52 rounded bg-transparent px-2 text-sm outline-none"
+            >
+                {targetIsStale && (
+                    <option value="" disabled>
+                        {target || "(sem título)"} — não encontrado
+                    </option>
+                )}
+                {headings.map((heading) => (
+                    <option key={heading} value={heading}>
+                        {heading}
+                    </option>
+                ))}
+            </select>
+            <BubbleIconButton onClick={jumpToTarget} label="Ir para o título">
+                <ArrowRight className="size-3.5" />
             </BubbleIconButton>
-            <BubbleIconButton onClick={removeLink} label="Remover link" danger>
+            <BubbleIconButton onClick={removeWikiLink} label="Remover link" danger>
                 <Trash2 className="size-3.5" />
             </BubbleIconButton>
         </div>,

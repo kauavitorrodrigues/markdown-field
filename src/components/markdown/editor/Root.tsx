@@ -13,6 +13,8 @@ import { MARK, LINK_PROTOCOLS } from "../shared/consts/marks"
 import { MarkdownImage, insertImageFile } from "../shared/consts/image"
 import { Table } from "../shared/consts/table"
 import { Callout } from "../shared/consts/callout"
+import { HeadingAnchors } from "../shared/consts/headingAnchors"
+import { WikiLink, scrollToWikiLinkTarget } from "../shared/consts/wikiLink"
 import { getMarkdown } from "./consts/notePayload"
 import { SlashCommandExtension, SLASH_COMMANDS } from "./SlashCommand"
 
@@ -79,6 +81,8 @@ export function Root({
             TableHeader,
             TableCell,
             Callout,
+            HeadingAnchors,
+            WikiLink,
             Markdown,
             // eslint-disable-next-line react-hooks/refs -- getPlaceholder is called by Tiptap outside of render, not during useMemo execution
             Placeholder.configure({ placeholder: getPlaceholder }),
@@ -101,6 +105,10 @@ export function Root({
                         "noopener,noreferrer"
                     )
                     return true
+                }
+                const wikiLinkMark = marks.find((m) => m.type.name === MARK.WIKI_LINK)
+                if (wikiLinkMark?.attrs.target) {
+                    return scrollToWikiLinkTarget(view, wikiLinkMark.attrs.target as string)
                 }
             }
             return false
