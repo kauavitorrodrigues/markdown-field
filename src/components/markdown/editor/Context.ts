@@ -55,6 +55,8 @@ export type EditorActiveFlags = {
     orderedList: boolean
     link: boolean
     heading: { level: 1 | 2 | 3 } | false
+    // null when the cursor isn't inside a table cell at all.
+    tableAlign: "left" | "center" | "right" | null
 }
 
 const DEFAULT_FLAGS: EditorActiveFlags = {
@@ -67,6 +69,7 @@ const DEFAULT_FLAGS: EditorActiveFlags = {
     orderedList: false,
     link: false,
     heading: false,
+    tableAlign: null,
 }
 
 function headingEqual(
@@ -93,8 +96,19 @@ function flagsEqual(
         a.bulletList === b.bulletList &&
         a.orderedList === b.orderedList &&
         a.link === b.link &&
-        headingEqual(a.heading, b.heading)
+        headingEqual(a.heading, b.heading) &&
+        a.tableAlign === b.tableAlign
     )
+}
+
+function tableCellAlign(editor: Editor): EditorActiveFlags["tableAlign"] {
+    const cellType = editor.isActive("tableHeader")
+        ? "tableHeader"
+        : editor.isActive("tableCell")
+          ? "tableCell"
+          : null
+    if (!cellType) return null
+    return (editor.getAttributes(cellType).align as "left" | "center" | "right" | null) ?? "left"
 }
 
 export function useEditorActiveFlags(enabled = true): EditorActiveFlags {
@@ -113,6 +127,7 @@ export function useEditorActiveFlags(enabled = true): EditorActiveFlags {
             heading: e?.isActive("heading")
                 ? ({ level: (e.getAttributes("heading").level ?? 1) as 1 | 2 | 3 } as const)
                 : false,
+            tableAlign: e ? tableCellAlign(e) : null,
         }),
         equalityFn: flagsEqual,
     }) ?? DEFAULT_FLAGS

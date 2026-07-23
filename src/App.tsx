@@ -138,6 +138,9 @@ export function App() {
                                 <MarkdownEditor.BulletList />
                                 <MarkdownEditor.OrderedList />
                                 <MarkdownEditor.InlineCode />
+                                <MarkdownEditor.TableCellAlignLeft />
+                                <MarkdownEditor.TableCellAlignCenter />
+                                <MarkdownEditor.TableCellAlignRight />
                             </MarkdownEditor.Bubble>
                             <MarkdownEditor.CharacterCount className="mt-2" />
                         </MarkdownEditor.Root>

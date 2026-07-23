@@ -28,15 +28,18 @@ export function Bubble({ children }: BubbleProps) {
     }, [])
 
     // Hide for node selections (e.g. a selected image): the text-formatting
-    // buttons in this menu don't apply to non-text nodes.
+    // buttons in this menu don't apply to non-text nodes. Table cells are an
+    // exception: alignment applies to the whole cell, so the bubble stays up
+    // there even with the cursor collapsed and nothing selected.
     const shouldShow = useCallback(
         ({ view, state, from, to }: { view: EditorView; state: EditorState; from: number; to: number }) => {
             const { doc, selection } = state
             if (selection instanceof NodeSelection) return false
-            if (selection.empty || !doc.textBetween(from, to).length) return false
+            const inTableCell = editor.isActive("tableCell") || editor.isActive("tableHeader")
+            if (!inTableCell && (selection.empty || !doc.textBetween(from, to).length)) return false
             return view.hasFocus()
         },
-        []
+        [editor]
     )
 
     return (

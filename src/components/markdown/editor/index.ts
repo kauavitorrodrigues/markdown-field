@@ -13,6 +13,11 @@ export { Quote } from "./commands/Quote"
 export { BulletList } from "./commands/BulletList"
 export { OrderedList } from "./commands/OrderedList"
 export { InlineCode } from "./commands/InlineCode"
+export {
+    TableCellAlignLeft,
+    TableCellAlignCenter,
+    TableCellAlignRight,
+} from "./commands/TableCellAlign"
 export { SlashCommandExtension } from "./SlashCommand"
 export { getNotePayload, getMarkdown } from "./consts/notePayload"
 export { getPendingImageFiles, resolveUploadedImage } from "../shared/consts/image"
@@ -32,6 +37,11 @@ import { Quote } from "./commands/Quote"
 import { BulletList } from "./commands/BulletList"
 import { OrderedList } from "./commands/OrderedList"
 import { InlineCode } from "./commands/InlineCode"
+import {
+    TableCellAlignLeft,
+    TableCellAlignCenter,
+    TableCellAlignRight,
+} from "./commands/TableCellAlign"
 
 export const MarkdownEditor = {
     Root,
@@ -49,4 +59,7 @@ export const MarkdownEditor = {
     BulletList,
     OrderedList,
     InlineCode,
+    TableCellAlignLeft,
+    TableCellAlignCenter,
+    TableCellAlignRight,
 }
